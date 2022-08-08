@@ -3,6 +3,9 @@ from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
 import random
+import numpy as np
+import torch
+import cv2 as cv
 
 
 class UnalignedDataset(BaseDataset):
@@ -54,11 +57,22 @@ class UnalignedDataset(BaseDataset):
         else:   # randomize the index for domain B to avoid fixed pairs.
             index_B = random.randint(0, self.B_size - 1)
         B_path = self.B_paths[index_B]
-        A_img = Image.open(A_path).convert('RGB')
-        B_img = Image.open(B_path).convert('RGB')
-        # apply image transformation
-        A = self.transform_A(A_img)
-        B = self.transform_B(B_img)
+        A_img = np.load(A_path)
+        B_img = np.load(B_path)
+
+
+       # print(A_path, A_img.max(), B_path, B_img.max())
+
+        num_channels = 9
+        A_img_downscaled = np.zeros((num_channels, 256, 256), dtype=np.float32)
+        B_img_downscaled = np.zeros((num_channels, 256, 256), dtype=np.float32)
+        for i in range(num_channels):
+            A_img_downscaled[i] = cv.resize(A_img[i], (256, 256))
+            B_img_downscaled[i] = cv.resize(B_img[i], (256, 256))
+
+
+        A = torch.from_numpy(A_img_downscaled)
+        B = torch.from_numpy(B_img_downscaled)
 
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
@@ -69,3 +83,6 @@ class UnalignedDataset(BaseDataset):
         we take a maximum of
         """
         return max(self.A_size, self.B_size)
+
+# python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html
+# python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9  --display_id 0 --no_html
