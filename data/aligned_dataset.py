@@ -91,7 +91,7 @@ class AlignedDataset(BaseDataset):
         we take a maximum of
         """
         num_files = max(self.A_size, self.B_size)
-        return num_files * 9 if self.opt.input_nc == 1 else num_files
+        return num_files * 9 if self.opt.input_nc in [1, 3] else num_files
 
 # python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html --dataset_mode aligned
 # python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9  --dataset_mode aligned
