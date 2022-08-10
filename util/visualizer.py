@@ -42,12 +42,16 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
         im = im_data.detach().cpu().numpy()[0]
         image_name = '%s_%s.png' % (name, label)
         save_path = os.path.join(image_dir, image_name)
-        #np.save(save_path, im)
+        #np.save(save_path, im) # FIXME: save raw?
 
         fig = plt.figure(figsize=(16, 15))
-        for i in range(im.shape[0]):
-            plt.subplot(3, 3, i + 1)
-            plt.imshow(im[i, :, :])
+        if im.shape[0] == 9:
+            for i in range(im.shape[0]):
+                plt.subplot(3, 3, i + 1)
+                plt.imshow(im[i, :, :])
+                plt.colorbar()
+        else:
+            plt.imshow(im[0, :, :])
             plt.colorbar()
         fig.savefig(save_path)
 
