@@ -104,7 +104,3 @@ class UnalignedDataset(BaseDataset):
         """
         num_files = max(self.A_size, self.B_size)
         return num_files * 9 if self.opt.input_nc in [1, 3] else num_files
-
-
-# python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html
-# python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9
