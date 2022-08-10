@@ -5,8 +5,7 @@ from PIL import Image
 import random
 import numpy as np
 import torch
-import cv2 as cv
-
+from data.utils import get_transform_params, transform_image
 
 class AlignedDataset(BaseDataset):
     """
@@ -51,23 +50,22 @@ class AlignedDataset(BaseDataset):
             A_paths (str)    -- image paths
             B_paths (str)    -- image paths
         """
+
+
         A_path = self.A_paths[index % self.A_size]  # make sure index is within then range
         B_path = self.B_paths[index % self.B_size]
         A_img = np.load(A_path)
         B_img = np.load(B_path)
 
-       # print(A_path, A_img.max(), B_path, B_img.max())
-
-        num_channels = 9
-        A_img_downscaled = np.zeros((num_channels, 256, 256), dtype=np.float32)
-        B_img_downscaled = np.zeros((num_channels, 256, 256), dtype=np.float32)
-        for i in range(num_channels):
-            A_img_downscaled[i] = cv.resize(A_img[i], (256, 256))
-            B_img_downscaled[i] = cv.resize(B_img[i], (256, 256))
+        crop_size = self.opt.crop_size # 256
+        load_size = self.opt.load_size # 286
+        params = get_transform_params((load_size, load_size), crop_size, crop_size)
+        A_img = transform_image(A_img, (load_size, load_size), params)
+        B_img = transform_image(B_img, (load_size, load_size), params)
 
 
-        A = torch.from_numpy(A_img_downscaled)
-        B = torch.from_numpy(B_img_downscaled)
+        A = torch.from_numpy(A_img)
+        B = torch.from_numpy(B_img)
 
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
