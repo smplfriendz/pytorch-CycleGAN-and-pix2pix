@@ -51,18 +51,30 @@ class AlignedDataset(BaseDataset):
             B_paths (str)    -- image paths
         """
 
+        if self.opt.input_nc == 1:
+            file_index = index // 9
+            channel_index = index % 9
+        elif self.opt.input_nc == 9:
+            file_index = index
+            channel_index = -1
+        else:
+            raise NotImplementedError(f"Unsupported number of input channels: {self.opt.input_nc}")
 
-        A_path = self.A_paths[index % self.A_size]  # make sure index is within then range
-        B_path = self.B_paths[index % self.B_size]
+        A_path = self.A_paths[file_index % self.A_size]  # make sure index is within then range
+        B_path = self.B_paths[file_index % self.B_size]
         A_img = np.load(A_path)
         B_img = np.load(B_path)
+
+        if channel_index >= 0:
+            # FIXME: we might need to repeat single channel to form RGB image. network might perform better
+            A_img = np.expand_dims(A_img[channel_index], axis=0)
+            B_img = np.expand_dims(B_img[channel_index], axis=0)
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
         params = get_transform_params((load_size, load_size), crop_size, crop_size, self.opt.no_flip)
         A_img = transform_image(A_img, (load_size, load_size), params)
         B_img = transform_image(B_img, (load_size, load_size), params)
-
 
         A = torch.from_numpy(A_img)
         B = torch.from_numpy(B_img)
@@ -75,7 +87,8 @@ class AlignedDataset(BaseDataset):
         As we have two datasets with potentially different number of images,
         we take a maximum of
         """
-        return max(self.A_size, self.B_size)
+        num_files = max(self.A_size, self.B_size)
+        return num_files * 9 if self.opt.input_nc == 1 else num_files
 
 # python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html --dataset_mode aligned
 # python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9  --dataset_mode aligned

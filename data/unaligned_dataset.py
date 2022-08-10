@@ -51,14 +51,37 @@ class UnalignedDataset(BaseDataset):
             A_paths (str)    -- image paths
             B_paths (str)    -- image paths
         """
-        A_path = self.A_paths[index % self.A_size]  # make sure index is within then range
-        if self.opt.serial_batches:   # make sure index is within then range
-            index_B = index % self.B_size
+
+        index_A = index
+        if self.opt.serial_batches:
+            index_B = index
         else:   # randomize the index for domain B to avoid fixed pairs.
-            index_B = random.randint(0, self.B_size - 1)
-        B_path = self.B_paths[index_B]
+            B_size = self.B_size * 9 if self.opt.input_nc == 1 else self.B_size
+            index_B = random.randint(0, B_size - 1)
+
+        if self.opt.input_nc == 1:
+            file_index_A = index_A // 9
+            channel_index_A = index_A % 9
+            file_index_B = index_B // 9
+            channel_index_B = index_B % 9
+        elif self.opt.input_nc == 9:
+            file_index_A = index_A
+            channel_index_A = -1
+            file_index_B = index_B
+            channel_index_B = -1
+        else:
+            raise NotImplementedError(f"Unsupported number of input channels: {self.opt.input_nc}")
+
+        A_path = self.A_paths[file_index_A]
+        B_path = self.B_paths[file_index_B]
         A_img = np.load(A_path)
         B_img = np.load(B_path)
+
+        if channel_index_A >= 0:
+            # FIXME: we might need to repeat single channel to form RGB image. network might perform better
+            A_img = np.expand_dims(A_img[channel_index_A], axis=0)
+        if channel_index_B >= 0:
+            B_img = np.expand_dims(B_img[channel_index_B], axis=0)
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
@@ -78,7 +101,9 @@ class UnalignedDataset(BaseDataset):
         As we have two datasets with potentially different number of images,
         we take a maximum of
         """
-        return max(self.A_size, self.B_size)
+        num_files = max(self.A_size, self.B_size)
+        return num_files * 9 if self.opt.input_nc == 1 else num_files
+
 
 # python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html
 # python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9
