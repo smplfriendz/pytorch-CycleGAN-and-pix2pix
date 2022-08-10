@@ -54,6 +54,11 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
                 plt.subplot(3, 3, i + 1)
                 plt.imshow(im[i, :, :])
                 plt.colorbar()
+        elif im.shape[0] == 3:
+            for i in range(im.shape[0]):
+                plt.subplot(1, 3, i + 1)
+                plt.imshow(im[i, :, :])
+                plt.colorbar()
         else:
             plt.imshow(im[0, :, :])
             plt.colorbar()
