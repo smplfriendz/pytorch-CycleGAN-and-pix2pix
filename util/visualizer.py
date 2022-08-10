@@ -33,6 +33,10 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     """
     image_dir = webpage.get_image_dir()
     short_path = ntpath.basename(image_path[0])
+    try:
+        _, channel = short_path.split(";")
+    except ValueError:
+        channel = "a"
     name = os.path.splitext(short_path)[0]
 
     webpage.add_header(name)
@@ -40,7 +44,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     ims_dict = {}
     for label, im_data in visuals.items():
         im = im_data.detach().cpu().numpy()[0]
-        image_name = '%s_%s.png' % (name, label)
+        image_name = '%s_%s_%s.png' % (name, channel, label)
         save_path = os.path.join(image_dir, image_name)
         #np.save(save_path, im) # FIXME: save raw?
 

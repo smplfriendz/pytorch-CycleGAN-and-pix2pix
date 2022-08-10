@@ -69,6 +69,9 @@ class AlignedDataset(BaseDataset):
             # FIXME: we might need to repeat single channel to form RGB image. network might perform better
             A_img = np.expand_dims(A_img[channel_index], axis=0)
             B_img = np.expand_dims(B_img[channel_index], axis=0)
+            A_path += f";{channel_index}" # encode it here for visualizer
+            B_path += f";{channel_index}"
+
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
@@ -78,6 +81,7 @@ class AlignedDataset(BaseDataset):
 
         A = torch.from_numpy(A_img)
         B = torch.from_numpy(B_img)
+
 
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 

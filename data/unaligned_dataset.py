@@ -80,8 +80,10 @@ class UnalignedDataset(BaseDataset):
         if channel_index_A >= 0:
             # FIXME: we might need to repeat single channel to form RGB image. network might perform better
             A_img = np.expand_dims(A_img[channel_index_A], axis=0)
+            A_path += f";{channel_index_A}" # encode it here for visualizer
         if channel_index_B >= 0:
             B_img = np.expand_dims(B_img[channel_index_B], axis=0)
+            B_path += f";{channel_index_B}"
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
