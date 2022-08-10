@@ -59,7 +59,7 @@ class UnalignedDataset(BaseDataset):
             B_size = self.B_size * 9 if self.opt.input_nc == 1 else self.B_size
             index_B = random.randint(0, B_size - 1)
 
-        if self.opt.input_nc == 1:
+        if self.opt.input_nc in [1, 3]:
             file_idx_A = index_A // 9
             file_idx_B = index_B // 9
             channel_idx_A = index_A % 9
