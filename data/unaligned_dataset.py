@@ -62,8 +62,8 @@ class UnalignedDataset(BaseDataset):
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
-        params_A = get_transform_params((load_size, load_size), crop_size, crop_size)
-        params_B = get_transform_params((load_size, load_size), crop_size, crop_size)
+        params_A = get_transform_params((load_size, load_size), crop_size, crop_size, self.opt.no_flip)
+        params_B = get_transform_params((load_size, load_size), crop_size, crop_size, self.opt.no_flip)
         A_img = transform_image(A_img, (load_size, load_size), params_A)
         B_img = transform_image(B_img, (load_size, load_size), params_B)
 
