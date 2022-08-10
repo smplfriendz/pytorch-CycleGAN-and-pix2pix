@@ -31,3 +31,15 @@ def transform_image(img: np.ndarray, size: Tuple[int], params: TransformParams):
     flipped = cv.flip(cropped) if params.flip else cropped
 
     return flipped
+
+def take_single_channel(img, channel_idx, num_channels):
+    channel = img[channel_idx]
+    if num_channels == 3:
+        out = np.zeros(3, img.shape)
+        out[0:,:,] = channel
+        out[1,:,:] = channel
+        out[2,:,:] = channel
+    else:
+        out = channel
+
+    return np.expand_dims(out, axis=0)

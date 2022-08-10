@@ -5,7 +5,7 @@ from PIL import Image
 import random
 import numpy as np
 import torch
-from data.utils import get_transform_params, transform_image
+from data.utils import get_transform_params, transform_image, take_single_channel
 
 class AlignedDataset(BaseDataset):
     """
@@ -51,26 +51,25 @@ class AlignedDataset(BaseDataset):
             B_paths (str)    -- image paths
         """
 
-        if self.opt.input_nc == 1:
-            file_index = index // 9
-            channel_index = index % 9
+        if self.opt.input_nc in [1, 3]:
+            file_idx = index // 9
+            channel_idx = index % 9
         elif self.opt.input_nc == 9:
-            file_index = index
-            channel_index = -1
+            file_idx = index
+            channel_idx = -1
         else:
             raise NotImplementedError(f"Unsupported number of input channels: {self.opt.input_nc}")
 
-        A_path = self.A_paths[file_index % self.A_size]  # make sure index is within then range
-        B_path = self.B_paths[file_index % self.B_size]
+        A_path = self.A_paths[file_idx % self.A_size]  # make sure index is within then range
+        B_path = self.B_paths[file_idx % self.B_size]
         A_img = np.load(A_path)
         B_img = np.load(B_path)
 
-        if channel_index >= 0:
-            # FIXME: we might need to repeat single channel to form RGB image. network might perform better
-            A_img = np.expand_dims(A_img[channel_index], axis=0)
-            B_img = np.expand_dims(B_img[channel_index], axis=0)
-            A_path += f";{channel_index}" # encode it here for visualizer
-            B_path += f";{channel_index}"
+        if channel_idx >= 0:
+            A_img = take_single_channel(A_img, channel_idx, self.opt.input_nc)
+            B_img = take_single_channel(B_img, channel_idx, self.opt.input_nc)
+            A_path += f";{channel_idx}" # encode it here for visualizer to work properly
+            B_path += f";{channel_idx}"
 
 
         crop_size = self.opt.crop_size # 256
@@ -96,3 +95,8 @@ class AlignedDataset(BaseDataset):
 
 # python3 train.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9 --display_id 0 --no_html --dataset_mode aligned
 # python3 test.py --dataroot ./datasets/depth --name depth_cyclegan --model cycle_gan --input_nc 9 --output_nc 9  --dataset_mode aligned
+
+# img2 = np.zeros_like(img)
+# img2[:,:,0] = gray
+# img2[:,:,1] = gray
+# img2[:,:,2] = gray

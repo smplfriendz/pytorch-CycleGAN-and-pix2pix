@@ -6,7 +6,7 @@ import random
 import numpy as np
 import torch
 import cv2 as cv
-from data.utils import get_transform_params, transform_image
+from data.utils import get_transform_params, transform_image, take_single_channel
 
 class UnalignedDataset(BaseDataset):
     """
@@ -60,30 +60,29 @@ class UnalignedDataset(BaseDataset):
             index_B = random.randint(0, B_size - 1)
 
         if self.opt.input_nc == 1:
-            file_index_A = index_A // 9
-            channel_index_A = index_A % 9
-            file_index_B = index_B // 9
-            channel_index_B = index_B % 9
+            file_idx_A = index_A // 9
+            file_idx_B = index_B // 9
+            channel_idx_A = index_A % 9
+            channel_idx_B = index_B % 9
         elif self.opt.input_nc == 9:
-            file_index_A = index_A
-            channel_index_A = -1
-            file_index_B = index_B
-            channel_index_B = -1
+            file_idx_A = index_A
+            file_idx_B = index_B
+            channel_idx_A = -1
+            channel_idx_B = -1
         else:
             raise NotImplementedError(f"Unsupported number of input channels: {self.opt.input_nc}")
 
-        A_path = self.A_paths[file_index_A]
-        B_path = self.B_paths[file_index_B]
+        A_path = self.A_paths[file_idx_A]
+        B_path = self.B_paths[file_idx_B]
         A_img = np.load(A_path)
         B_img = np.load(B_path)
 
-        if channel_index_A >= 0:
-            # FIXME: we might need to repeat single channel to form RGB image. network might perform better
-            A_img = np.expand_dims(A_img[channel_index_A], axis=0)
-            A_path += f";{channel_index_A}" # encode it here for visualizer
-        if channel_index_B >= 0:
-            B_img = np.expand_dims(B_img[channel_index_B], axis=0)
-            B_path += f";{channel_index_B}"
+        if channel_idx_A >= 0:
+            A_img = take_single_channel(A_img, channel_idx_A, self.opt.input_nc)
+            A_path += f";{channel_idx_A}" # encode it here for visualizer to work properly
+        if channel_idx_B >= 0:
+            B_img = take_single_channel(B_img, channel_idx_B, self.opt.input_nc)
+            B_path += f";{channel_idx_B}"
 
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
