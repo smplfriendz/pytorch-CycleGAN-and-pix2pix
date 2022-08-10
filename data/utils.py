@@ -35,11 +35,11 @@ def transform_image(img: np.ndarray, size: Tuple[int], params: TransformParams):
 def take_single_channel(img, channel_idx, num_channels):
     channel = img[channel_idx]
     if num_channels == 3:
-        out = np.zeros(3, img.shape)
+        out = np.zeros((3, *channel.shape), dtype=channel.dtype)
         out[0:,:,] = channel
         out[1,:,:] = channel
         out[2,:,:] = channel
     else:
-        out = channel
+        out = np.expand_dims(channel, axis=0)
 
-    return np.expand_dims(out, axis=0)
+    return out
