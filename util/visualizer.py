@@ -58,6 +58,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
             plt.imshow(im[0, :, :])
             plt.colorbar()
         fig.savefig(save_path)
+        plt.close(fig)
 
         ims.append(image_name)
         txts.append(label)
