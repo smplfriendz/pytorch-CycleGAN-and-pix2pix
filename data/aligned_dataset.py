@@ -5,7 +5,7 @@ from PIL import Image
 import random
 import numpy as np
 import torch
-from data.utils import get_transform_params, transform_image, take_single_channel
+from data.utils import get_transform_params, transform_image, take_single_channel, TransformParams
 
 class AlignedDataset(BaseDataset):
     """
@@ -75,6 +75,8 @@ class AlignedDataset(BaseDataset):
         crop_size = self.opt.crop_size # 256
         load_size = self.opt.load_size # 286
         params = get_transform_params((load_size, load_size), crop_size, crop_size, self.opt.no_flip)
+        #params = TransformParams(0, crop_size, 0, crop_size, False)
+        #load_size = crop_size
         A_img = transform_image(A_img, (load_size, load_size), params)
         B_img = transform_image(B_img, (load_size, load_size), params)
 
