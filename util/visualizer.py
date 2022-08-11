@@ -70,7 +70,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     if use_wandb:
         wandb.log(ims_dict)
 
-def plot_pair(A_path, B_path, output_path):
+def plot_pair(A_path: Path, B_path: Path, output_path: Path):
     name, channel = A_path.stem.split("_")[:2]
     png_filename = output_path / f"{name}_{channel}.png"
 
@@ -88,7 +88,7 @@ def plot_pair(A_path, B_path, output_path):
     fig.savefig(png_filename)
     plt.close(fig)
 
-def save_pairs(input_path, output_path):
+def save_pairs(input_path: Path, output_path: Path):
     fake_A = [f for f in input_path.glob("*_fake_A.npy")]
     fake_B = [f for f in input_path.glob("*_fake_B.npy")]
     real_A = [f for f in input_path.glob("*_real_A.npy")]
@@ -105,6 +105,26 @@ def save_pairs(input_path, output_path):
     ba_path.mkdir(parents=True, exist_ok=True)
     for real, fake in zip(real_B, fake_A):
         plot_pair(real, fake, ba_path)
+
+
+def save_depthmap(input_path: Path, output_path: Path):
+    output_path.mkdir(parents=True, exist_ok=True)
+    names = list(set([f.stem.split("_")[0] for f in input_path.glob("*.npy")]))
+
+    for name in names:
+        for suffix in ["real_A", "real_B", "fake_A", "fake_B"]:
+            try:
+                num_channels = 9
+                img = np.zeros((num_channels, 512, 512), dtype=np.float32)
+                for channel in range(num_channels):
+                    predicted = np.load(input_path / f"{name}_{channel}_{suffix}.npy")
+                    upscaled = cv.resize(predicted[0], (512, 512), interpolation=cv.INTER_CUBIC)
+                    img[channel] = upscaled
+
+                np.save(output_path / f"{name}_{suffix}.npy", img)
+            except Exception as e:
+                print(e)
+
 
 
 class Visualizer():

@@ -79,7 +79,10 @@ if __name__ == '__main__':
             print('processing (%04d)-th image... %s' % (i, img_path))
         save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize, use_wandb=opt.use_wandb)
 
-    print("saving pairs")
-    save_pairs(Path(web_dir) / "images", Path(web_dir) / "pairs")
+    if opt.input_nc == 1:
+        print("saving pairs")
+        save_pairs(Path(web_dir) / "images", Path(web_dir) / "pairs")
+        print("saving depthmaps")
+        save_pairs(Path(web_dir) / "images", Path(web_dir) / "depthmaps")
 
     webpage.save()  # save the HTML
