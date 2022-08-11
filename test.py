@@ -30,7 +30,7 @@ import os
 from options.test_options import TestOptions
 from data import create_dataset
 from models import create_model
-from util.visualizer import save_images, save_pairs
+from util.visualizer import save_images, save_pairs, save_depthmap
 from util import html
 from pathlib import Path
 
@@ -83,6 +83,6 @@ if __name__ == '__main__':
         print("saving pairs")
         save_pairs(Path(web_dir) / "images", Path(web_dir) / "pairs")
         print("saving depthmaps")
-        save_pairs(Path(web_dir) / "images", Path(web_dir) / "depthmaps")
+        save_depthmap(Path(web_dir) / "images", Path(web_dir) / "depthmaps")
 
     webpage.save()  # save the HTML
