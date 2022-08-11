@@ -1,6 +1,7 @@
 import cv2 as cv
 from typing import NamedTuple, Tuple
 import numpy as np
+import random 
 
 class TransformParams(NamedTuple):
     x0: int
@@ -13,9 +14,9 @@ def get_transform_params(size: Tuple[int], crop_width: int, crop_height: int, no
     max_x = size[0] - crop_width
     max_y = size[1] - crop_height
 
-    x = np.random.randint(0, max_x) if max_x > 0 else 0
-    y = np.random.randint(0, max_y) if max_y > 0 else 0
-    flip = False if no_flip else np.random.randint(0, 1)
+    x = random.randint(0, max_x) if max_x > 0 else 0
+    y = random.randint(0, max_y) if max_y > 0 else 0
+    flip = False if no_flip else bool(random.randint(0, 1))
 
     return TransformParams(x, x + crop_width, y, y + crop_height, flip)
 
@@ -28,7 +29,7 @@ def transform_image(img: np.ndarray, size: Tuple[int], params: TransformParams):
         upsampled[i] = cv.resize(img[i], size, interpolation=cv.INTER_CUBIC)
 
     cropped = upsampled[:, params.y0 : params.y1, params.x0 : params.x1]
-    flipped = cv.flip(cropped) if params.flip else cropped
+    flipped = cv.flip(cropped, 0) if params.flip else cropped
 
     return flipped
 
