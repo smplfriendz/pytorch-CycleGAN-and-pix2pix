@@ -7,6 +7,7 @@ from . import util, html
 from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
 from pathlib import Path
+import cv2 as cv
 
 try:
     import wandb
