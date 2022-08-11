@@ -6,7 +6,7 @@ import time
 from . import util, html
 from subprocess import Popen, PIPE
 import matplotlib.pyplot as plt
-
+from pathlib import Path
 
 try:
     import wandb
@@ -46,7 +46,8 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
         im = im_data.detach().cpu().numpy()[0]
         image_name = '%s_%s_%s.png' % (name, channel, label)
         save_path = os.path.join(image_dir, image_name)
-        #np.save(save_path, im) # FIXME: save raw?
+        numpy_name = '%s_%s_%s.npy' % (name, channel, label)
+        np.save(os.path.join(image_dir, numpy_name), im)
 
         fig = plt.figure(figsize=(16, 15))
         if im.shape[0] == 9:
@@ -68,6 +69,42 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256, use_w
     webpage.add_images(ims, txts, links, width=width)
     if use_wandb:
         wandb.log(ims_dict)
+
+def plot_pair(A_path, B_path, output_path):
+    name, channel = A_path.stem.split("_")[:2]
+    png_filename = output_path / f"{name}_{channel}.png"
+
+    fig = plt.figure(figsize=(16, 15))
+    im = np.load(A_path)
+    plt.subplot(1, 2, 1)
+    plt.imshow(im[0, :, :])
+    #plt.colorbar()
+
+    im = np.load(B_path)
+    plt.subplot(1, 2, 2)
+    plt.imshow(im[0, :, :])
+    #plt.colorbar()
+
+    fig.savefig(png_filename)
+    plt.close(fig)
+
+def save_pairs(input_path, output_path):
+    fake_A = [f for f in input_path.glob("*_fake_A.npy")]
+    fake_B = [f for f in input_path.glob("*_fake_B.npy")]
+    real_A = [f for f in input_path.glob("*_real_A.npy")]
+    real_B = [f for f in input_path.glob("*_real_B.npy")]
+
+    # direction AB
+    ab_path = output_path / "real_to_synth"
+    ab_path.mkdir(parents=True, exist_ok=True)
+    for real, fake in zip(real_A, fake_B):
+        plot_pair(real, fake, ab_path)
+
+    # direction BA
+    ba_path = output_path / "synth_to_real"
+    ba_path.mkdir(parents=True, exist_ok=True)
+    for real, fake in zip(real_B, fake_A):
+        plot_pair(real, fake, ba_path)
 
 
 class Visualizer():

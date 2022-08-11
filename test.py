@@ -30,8 +30,9 @@ import os
 from options.test_options import TestOptions
 from data import create_dataset
 from models import create_model
-from util.visualizer import save_images
+from util.visualizer import save_images, save_pairs
 from util import html
+from pathlib import Path
 
 try:
     import wandb
@@ -77,4 +78,8 @@ if __name__ == '__main__':
         if i % 5 == 0:  # save images to an HTML file
             print('processing (%04d)-th image... %s' % (i, img_path))
         save_images(webpage, visuals, img_path, aspect_ratio=opt.aspect_ratio, width=opt.display_winsize, use_wandb=opt.use_wandb)
+
+    print("saving pairs")
+    save_pairs(Path(web_dir) / "images", Path(web_dir) / "pairs")
+
     webpage.save()  # save the HTML
